@@ -1,51 +1,43 @@
-// DIY CAN Read
+// READ
+
 #include <SPI.h>
-#include <mcp_can.h>
-#include <mcp_can_dfs.h>
+#include "mcp_can.h"
 
+const int SPI_CS_PIN = 10;  // Define the chip select pin
+MCP_CAN CAN(SPI_CS_PIN);  // Create can with the correct pin
 
-const int SPI_CS_PIN = 10;  // CS is connected to digital 10 on arduino
+void setup()
+{
+    Serial.begin(115200);  // Init serial with highest baudrate
 
-MCP_CAN CAN(SPI_CS_PIN);  // MCP CAN with the Chip Select Pin
-
-unsigned long timestamp;  // time message is received
-long unsigned int senderId;  // sender node id
-unsigned char len = 0;  // length of the message
-unsigned char buf[8];  // buffer for 8byte message
-
-void setup() {
- Serial.begin(115200);  // Begin serial with highest baud
-
- while (CAN_OK != CAN.begin(CAN_250KBPS)) {  // Try to init CAN
-  Serial.println("Failed to initialize. Retrying...";
-  delay(500);  // Wait half a second if CAN initialization fails
- }
-
- Serial.println("CAN node initialized");
- Serial.println("Receive time\tSenderID\tMessage (Hex)")  // Table header
+    while (CAN_OK != CAN.begin(CAN_500KBPS))  // While initialization fails
+    {
+        Serial.println("Initialization failed. Retying...");
+        delay(100);
+    }
+    Serial.println("Initialized.");
+    Serial.println("Sender ID/tByte 0\tByte1\tByte2\tByte3\tByte4\tByte5\tByte6\tByte7");
 }
 
-void loop() {
-  if (CAN_MSGAVAIL == CAN.checkReceive()) { . // If there is a message available
-    timestamp = millis();
-    CAN.readMsgBuf(&len, buf);
-    senderId = CAN.getCanId();
 
-    Serial.print(timestamp);
-    Serial.print(/t);
-    Serial.print("0x");
-    Serial.print(senderId, HEX);
-    Serial.print("\t");
+void loop()
+{
+    unsigned char len = 0;
+    unsigned char buf[8];
 
-    for (int i = 0; i < len; i++) {
-      if (buf[i] > 15) {
-        Serial.print(buf[i], HEX);
-      } else {
-        Serial.print("0");
-        Serial.print(buf[i], HEX);
-      }
-      Serial.print(" ");
+    if(CAN_MSGAVAIL == CAN.checkReceive()) // If we have a message available
+    {
+        CAN.readMsgBuf(&len, buf);  // Read the message into our buffer
+        unsigned long senderID = CAN.getCanId();  // Get the sender nodes ID
+
+        Serial.print(senderID, HEX);  // Print out sender
+        Serial.print("\t");
+
+        for(int i = 0; i<len; i++)  // Print out the data bytes
+        {
+            Serial.print(buf[i]);
+            Serial.print("\t");
+        }
+        Serial.println();
     }
-    Serial.println();
-  }
 }

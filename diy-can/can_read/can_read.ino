@@ -16,7 +16,7 @@ void setup()
         delay(100);
     }
     Serial.println("Initialized.");
-    Serial.println("Sender ID/tByte 0\tByte1\tByte2\tByte3\tByte4\tByte5\tByte6\tByte7");
+    Serial.println("Sender ID\tByte 0\tByte1\tByte2\tByte3\tByte4\tByte5\tByte6\tByte7");
 }
 
 
@@ -31,11 +31,11 @@ void loop()
         unsigned long senderID = CAN.getCanId();  // Get the sender nodes ID
 
         Serial.print(senderID, HEX);  // Print out sender
-        Serial.print("\t");
+        Serial.print("\t\t");
 
         for(int i = 0; i<len; i++)  // Print out the data bytes
         {
-            Serial.print(buf[i]);
+            Serial.print(buf[i], HEX);
             Serial.print("\t");
         }
         Serial.println();
